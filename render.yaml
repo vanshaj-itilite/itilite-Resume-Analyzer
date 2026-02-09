@@ -85,4 +85,5 @@ services:
     plan: free
     region: singapore
     ipAllowList:
-      - 0.0.0.0/0
+      - source: 0.0.0.0/0
+        description: everywhere
