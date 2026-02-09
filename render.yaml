@@ -1,0 +1,82 @@
+services:
+  - type: web
+    name: ai-resume-analyzer-web
+    runtime: python
+    plan: free
+    rootDir: project
+    buildCommand: ./build.sh
+    startCommand: python -m gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: ALLOWED_HOSTS
+        value: ai-resume-analyzer-web.onrender.com
+      - key: SECRET_KEY
+        generateValue: true
+      - key: REMOTE_REDIS_URL
+        fromService:
+          type: redis
+          name: ai-resume-analyzer-redis
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: worker
+    name: ai-resume-analyzer-extraction
+    runtime: python
+    plan: free
+    rootDir: project
+    buildCommand: ./build.sh
+    startCommand: celery -A backend.celery_app worker -Q extraction -n extraction@%h --loglevel=info
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: ALLOWED_HOSTS
+        value: ai-resume-analyzer-web.onrender.com
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: ai-resume-analyzer-web
+          envVarKey: SECRET_KEY
+      - key: REMOTE_REDIS_URL
+        fromService:
+          type: redis
+          name: ai-resume-analyzer-redis
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: worker
+    name: ai-resume-analyzer-analysis
+    runtime: python
+    plan: free
+    rootDir: project
+    buildCommand: ./build.sh
+    startCommand: celery -A backend.celery_app worker -Q analysis -n analysis@%h --loglevel=info
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: ALLOWED_HOSTS
+        value: ai-resume-analyzer-web.onrender.com
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: ai-resume-analyzer-web
+          envVarKey: SECRET_KEY
+      - key: REMOTE_REDIS_URL
+        fromService:
+          type: redis
+          name: ai-resume-analyzer-redis
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: redis
+    name: ai-resume-analyzer-redis
+    plan: free

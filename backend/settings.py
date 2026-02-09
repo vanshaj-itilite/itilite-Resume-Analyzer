@@ -21,6 +21,8 @@ else:
 
 ALLOWED_HOSTS = ["AI-Resume-Analyzer.onrender.com"]
 
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.staticfiles",
