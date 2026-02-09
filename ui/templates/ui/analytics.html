@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analytics | Resume Analyzer</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'ui/styles.css' %}" />
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <div>
+        <div class="eyebrow">Intelligence Insights</div>
+        <h1>Processing History</h1>
+        <p class="sub">Reviewing the latest 100 neural analysis cycles.</p>
+      </div>
+      <a class="btn ghost" href="/" data-loading-text="Returning...">
+        <span class="btn-label">Back to Analyzer</span>
+        <span class="btn-spinner" aria-hidden="true"></span>
+      </a>
+    </header>
+
+    <section class="card">
+      <div class="table">
+        <div class="row header">
+          <div>Timestamp</div>
+          <div>Source</div>
+          <div>Model</div>
+          <div>Temp</div>
+          <div>Threshold</div>
+          <div>Chars</div>
+        </div>
+
+        {% for r in runs %}
+          <div class="row">
+            <div class="text-accent" style="font-family: monospace;">{{ r.created_at|date:"Y-m-d H:i" }}</div>
+            <div style="font-weight: 500;">{{ r.source }}</div>
+            <div class="pill" style="width: fit-content; font-size: 11px;">{{ r.ai_model }}</div>
+            <div class="text-muted">{{ r.temperature }}</div>
+            <div style="color: var(--accent-2);">{{ r.threshold }}%</div>
+            <div class="text-muted">{{ r.document_length }}</div>
+          </div>
+        {% empty %}
+          <div class="row empty">
+            <p>No analysis logs found in the database.</p>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <footer class="waterfall-footer">
+    <div class="waterfall-waves">
+      <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+        <defs>
+          <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+        </defs>
+        <g class="parallax">
+          <use xlink:href="#gentle-wave" x="48" y="0" />
+          <use xlink:href="#gentle-wave" x="48" y="3" />
+          <use xlink:href="#gentle-wave" x="48" y="5" />
+          <use xlink:href="#gentle-wave" x="48" y="7" />
+        </g>
+      </svg>
+    </div>
+    
+    <div class="footer-content">
+      <div class="footer-info">
+        <p>&copy; 2026 AI Resume Analyzer • Neural Processing Analytics</p>
+        <div class="footer-links">
+          <a href="#">System Status</a>
+          <a href="#">API Documentation</a>
+          <a href="#">Export Data</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Loading State Logic
+    const linkButtons = document.querySelectorAll('a.btn[data-loading-text]');
+    linkButtons.forEach((link) => {
+      link.addEventListener('click', () => {
+        link.classList.add('is-loading');
+        link.setAttribute('aria-busy', 'true');
+        const label = link.querySelector('.btn-label');
+        const loadingText = link.getAttribute('data-loading-text');
+        if (label && loadingText) {
+          label.textContent = loadingText;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resume Analyzer</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'ui/styles.css' %}" />
+</head>
+<body data-backend-url="{{ backend_url }}">
+  <div class="shell">
+    <header class="header">
+      <div>
+        <div class="eyebrow">Intelligence Suite</div>
+        <h1>Resume Analyzer <span class="badge">v2.0</span></h1>
+        <p class="sub">Advanced Semantic, Technical, and Psychometric profiling.</p>
+      </div>
+      <div class="header-actions">
+        <!-- <button class="icon-btn" type="button" aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 8.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Zm9.2 3.2c0-.5 0-1-.1-1.4l2-1.6-2-3.5-2.5 1a8.6 8.6 0 0 0-2.4-1.4L14 1h-4l-.2 3.3a8.6 8.6 0 0 0-2.4 1.4l-2.5-1-2 3.5 2 1.6c-.1.5-.1.9-.1 1.4s0 1 .1 1.4l-2 1.6 2 3.5 2.5-1a8.6 8.6 0 0 0 2.4 1.4L10 23h4l.2-3.3a8.6 8.6 0 0 0 2.4-1.4l2.5 1 2-3.5-2-1.6c.1-.5.1-.9.1-1.4Z"/>
+          </svg>
+        </button> -->
+        <a class="btn ghost" href="/analytics/" data-loading-text="Loading...">
+          <span class="btn-label">View Analytics</span>
+        </a>
+      </div>
+    </header>
+
+    {% if error %}
+      <div class="card error" style="border-left: 4px solid #ef4444;">
+        <strong>Analysis Error:</strong> {{ error }}
+      </div>
+    {% endif %}
+
+    <!-- <div class="mode-toggle">
+      <button type="button" class="mode-btn active" onclick="switchMode('single')">Single Analysis</button>
+      <button type="button" class="mode-btn" onclick="switchMode('batch')">Batch Process</button>
+    </div> -->
+
+    <form class="grid-layout" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <aside class="side-col">
+        <section class="card settings-card">
+          <div class="card-header">
+            <h2>Global AI Settings</h2>
+            <p class="sub">Configurations apply to all runs</p>
+          </div>
+          
+          <div class="stack">
+            <label class="field">
+              <span>Intelligence Model</span>
+              {{ form.ai_model }}
+            </label>
+            
+            <label class="field">
+              <span>Temperature (Creativity)</span>
+              {{ form.temperature }}
+            </label>
+            
+            <label class="field">
+              <span>Confidence Threshold</span>
+              <div class="range-container">
+                {{ form.threshold }}
+                <output id="thresholdValue">50</output>
+              </div>
+            </label>
+
+            <div class="divider"></div>
+
+            <div class="context-block">
+              <h3>Company Context</h3>
+              <p class="sub">Optional guidance for shortlisting decisions.</p>
+            </div>
+
+            <label class="field">
+              <span>Company Name</span>
+              <input type="text" name="company_name" placeholder="Acme Corp" />
+            </label>
+
+            <label class="field">
+              <span>Job Context</span>
+              <textarea name="job_context" rows="4" placeholder="Role, key requirements, must-have skills..."></textarea>
+            </label>
+          </div>
+
+          <div class="settings-footer">
+            <p class="hint">Parallel processing enabled for batch uploads.</p>
+          </div>
+        </section>
+        </aside>
+
+        <main class="main-col">
+        <div class="mode-toggle">
+          <button type="button" class="mode-btn active" data-mode="single">Single Analysis</button>
+          <button type="button" class="mode-btn" data-mode="batch">Batch Upload</button>
+        </div>
+
+        <div id="singleSection" class="input-mode">
+          <section class="card">
+            <div class="card-header">
+              <h2>Document Text</h2>
+              <p class="sub">Paste resume content or technical bio</p>
+            </div>
+            <label class="field">
+              {{ form.document_text }}
+            </label>
+            <button class="btn primary-btn" type="submit">
+              <span class="btn-label">Run Single Analysis</span>
+            </button>
+          </section>
+        </div>
+
+        <div id="batchSection" class="input-mode hidden">
+          <section class="card">
+            <div class="card-header">
+              <h2>Bulk Processing</h2>
+              <p class="sub">PDFs are processed in parallel based on global settings</p>
+            </div>
+            
+            <div class="upload-grid">
+              <label class="upload-dropzone">
+                <span>Upload Files</span>
+                <input id="batchFiles" type="file" multiple accept=".pdf" />
+              </label>
+              <label class="upload-dropzone">
+                <span>Upload Folder</span>
+                <input id="batchFolder" type="file" webkitdirectory directory />
+              </label>
+            </div>
+
+            <div class="actions">
+              <button class="btn" type="button" id="batchRun">Run Batch Analysis</button>
+              <button class="btn ghost" type="button" id="batchClear">Clear Queue</button>
+            </div>
+            
+            <div class="progress-container">
+              <div class="progress-bar-bg"><div class="progress-bar-fill" id="batchProgress"></div></div>
+              <div class="status-legend">
+                <span class="legend-item">Queued</span>
+                <span class="legend-item">Running</span>
+                <span class="legend-item">Done</span>
+              </div>
+              <div id="batchStatus" class="status-list"></div>
+            </div>
+          </section>
+        </div>
+
+        {% if result or resume_data %}
+          <section class="card results-card">
+          </section>
+        {% endif %}
+      </main>
+    </form>
+
+    <section id="batchMode" class="card hidden">
+      <div class="card-header">
+        <h2>Batch Processing</h2>
+        <p class="sub">Drag and drop multiple PDFs or entire folders for parallel processing.</p>
+      </div>
+      
+      <div class="upload-zone">
+        <div class="grid">
+          <label class="upload-box">
+            <span>Select Files</span>
+            <input id="batchFiles" type="file" multiple accept=".pdf,application/pdf" />
+          </label>
+          <label class="upload-box">
+            <span>Select Folder</span>
+            <input id="batchFolder" type="file" webkitdirectory directory />
+          </label>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top: 1.5rem;">
+        <button class="btn" type="button" id="batchRun" data-loading-text="Processing...">
+          <span class="btn-label">Launch Batch Analysis</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+        <button class="btn ghost" type="button" id="batchClear">Reset Queue</button>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="batchProgress"></div>
+        </div>
+        <div class="status-list" id="batchStatus"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="waterfall-footer">
+    <div class="waterfall-waves">
+      <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+        <defs>
+          <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+        </defs>
+        <g class="parallax">
+          <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(37, 99, 235, 0.7" />
+          <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(37, 99, 235, 0.5)" />
+          <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(37, 99, 235, 0.3)" />
+          <use xlink:href="#gentle-wave" x="48" y="7" fill="#2563eb" />
+        </g>
+      </svg>
+    </div>
+    
+    <div class="footer-content">
+      <div class="footer-info">
+        <p>&copy; 2026 AI Resume Analyzer • Intelligent Talent Profiling</p>
+        <div class="footer-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Technical Docs</a>
+          <a href="#">Support</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll('.mode-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        // UI state
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Section visibility
+        const mode = this.dataset.mode;
+        if (mode === 'single') {
+          document.getElementById('singleSection').classList.remove('hidden');
+          document.getElementById('batchSection').classList.add('hidden');
+        } else {
+          document.getElementById('singleSection').classList.add('hidden');
+          document.getElementById('batchSection').classList.remove('hidden');
+        }
+      });
+    });
+
+    // Update threshold output
+    const thresholdInput = document.querySelector('input[name="threshold"]');
+    if(thresholdInput) {
+      thresholdInput.addEventListener('input', (e) => {
+        document.getElementById('thresholdValue').textContent = e.target.value;
+      });
+    }
+
+    // 
+    const slider = document.querySelector('input[type="range"]');
+    const output = document.getElementById('thresholdValue');
+    if (slider && output) {
+      output.textContent = slider.value;
+      slider.addEventListener('input', (e) => {
+        output.textContent = e.target.value;
+      });
+    }
+
+    const form = document.querySelector('form.grid');
+    if (form) {
+      form.addEventListener('submit', () => {
+        const button = form.querySelector('button[type="submit"]');
+        if (!button) return;
+        button.classList.add('is-loading');
+        button.disabled = true;
+        const label = button.querySelector('.btn-label');
+        const loadingText = button.getAttribute('data-loading-text');
+        if (label && loadingText) {
+          label.textContent = loadingText;
+        }
+      });
+    }
+
+    const linkButtons = document.querySelectorAll('a.btn[data-loading-text]');
+    linkButtons.forEach((link) => {
+      link.addEventListener('click', () => {
+        link.classList.add('is-loading');
+        link.setAttribute('aria-busy', 'true');
+        const label = link.querySelector('.btn-label');
+        const loadingText = link.getAttribute('data-loading-text');
+        if (label && loadingText) {
+          label.textContent = loadingText;
+        }
+      });
+    });
+
+    const backendUrl = document.body.dataset.backendUrl || "http://localhost:8001";
+    const batchFilesInput = document.getElementById("batchFiles");
+    const batchFolderInput = document.getElementById("batchFolder");
+    const batchRun = document.getElementById("batchRun");
+    const batchClear = document.getElementById("batchClear");
+    const batchProgress = document.getElementById("batchProgress");
+    const batchStatus = document.getElementById("batchStatus");
+
+    const uploadState = new Map();
+
+    const formatBytes = (bytes) => {
+      if (!bytes && bytes !== 0) return "";
+      const units = ["B", "KB", "MB", "GB"];
+      let value = bytes;
+      let idx = 0;
+      while (value >= 1024 && idx < units.length - 1) {
+        value /= 1024;
+        idx += 1;
+      }
+      return `${value.toFixed(value < 10 && idx > 0 ? 1 : 0)} ${units[idx]}`;
+    };
+
+    const collectFiles = () => {
+      const files = [];
+      if (batchFilesInput?.files?.length) {
+        files.push(...batchFilesInput.files);
+      }
+      if (batchFolderInput?.files?.length) {
+        files.push(...batchFolderInput.files);
+      }
+      const seen = new Set();
+      return files.filter((file) => {
+        const pathName = file.webkitRelativePath || file.name;
+        const key = `${pathName}-${file.size}-${file.lastModified}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    };
+
+    const resetBatchUI = () => {
+      uploadState.clear();
+      if (batchStatus) batchStatus.innerHTML = "";
+      if (batchProgress) batchProgress.style.width = "0%";
+      if (batchFilesInput) batchFilesInput.value = "";
+      if (batchFolderInput) batchFolderInput.value = "";
+    };
+
+    const createStatusRow = (file) => {
+      const pathName = file.webkitRelativePath || file.name;
+      const key = `${pathName}-${file.size}-${file.lastModified}`;
+      const row = document.createElement("div");
+      row.className = "status-row";
+      row.dataset.filename = pathName;
+      row.dataset.key = key;
+      row.innerHTML = `
+        <div class="status-name">
+          <span class="status-icon" aria-hidden="true"></span>
+          <span class="status-filename">${pathName}</span>
+        </div>
+        <div class="status-meta">${formatBytes(file.size)}</div>
+        <div class="status-state">Queued</div>
+        <div class="status-summary"></div>
+        <div class="status-track">
+          <div class="status-track-bar">
+            <div class="status-progress"></div>
+          </div>
+          <span class="status-progress-text">0%</span>
+        </div>
+      `;
+      batchStatus?.appendChild(row);
+      return row;
+    };
+
+    const updateOverallProgress = () => {
+      let loaded = 0;
+      let total = 0;
+      uploadState.forEach((entry) => {
+        loaded += entry.loaded || 0;
+        total += entry.total || 0;
+      });
+      const pct = total ? Math.round((loaded / total) * 100) : 0;
+      if (batchProgress) batchProgress.style.width = `${pct}%`;
+    };
+
+    const getThresholdValue = () => {
+      const thresholdInput = document.querySelector('input[name="threshold"]');
+      if (!thresholdInput) return 0;
+      const value = parseInt(thresholdInput.value, 10);
+      return Number.isFinite(value) ? value : 0;
+    };
+
+    const setStatusIcon = (row, passed) => {
+      const icon = row.querySelector(".status-icon");
+      if (!icon) return;
+      icon.classList.remove("pass", "fail");
+      if (passed === true) icon.classList.add("pass");
+      if (passed === false) icon.classList.add("fail");
+    };
+
+    const pollStatus = (taskId, row) => {
+      const url = `${backendUrl}/analysis/status/${taskId}`;
+      fetch(url, { credentials: "omit" })
+        .then((resp) => resp.json())
+        .then((data) => {
+          const state = data.state || "PENDING";
+          const stateEl = row.querySelector(".status-state");
+          const summaryEl = row.querySelector(".status-summary");
+          const progressEl = row.querySelector(".status-progress");
+          const progressText = row.querySelector(".status-progress-text");
+          if (stateEl) {
+            if (state === "SUCCESS") stateEl.textContent = "Complete";
+            else if (state === "FAILURE") stateEl.textContent = "Failed";
+            else if (state === "STARTED") stateEl.textContent = "Running";
+            else stateEl.textContent = "Queued";
+          }
+          if (typeof data.progress === "number") {
+            const pct = Math.max(0, Math.min(100, data.progress));
+            if (progressEl) progressEl.style.width = `${pct}%`;
+            if (progressText) progressText.textContent = `${pct}%`;
+          }
+
+          if (state === "SUCCESS") {
+            const score = Number(data?.result?.score);
+            const threshold = getThresholdValue();
+            const passed = Number.isFinite(score) ? score >= threshold : null;
+            setStatusIcon(row, passed);
+            if (summaryEl) summaryEl.textContent = data?.result?.summary || "";
+            return;
+          }
+          if (state === "FAILURE") {
+            setStatusIcon(row, false);
+            if (summaryEl) summaryEl.textContent = "Failed to generate report.";
+            return;
+          }
+          setTimeout(() => pollStatus(taskId, row), 2000);
+        })
+        .catch(() => {
+          const stateEl = row.querySelector(".status-state");
+          if (stateEl) stateEl.textContent = "Status error";
+          setTimeout(() => pollStatus(taskId, row), 4000);
+        });
+    };
+
+    const uploadFile = (file, row) =>
+      new Promise((resolve) => {
+        const request = new XMLHttpRequest();
+        const formData = new FormData();
+        formData.append("file", file, file.name);
+
+        const aiModel = document.querySelector('select[name="ai_model"]')?.value || "";
+        const temperature = document.querySelector('input[name="temperature"]')?.value || "";
+        const threshold = document.querySelector('input[name="threshold"]')?.value || "";
+        if (aiModel) formData.append("ai_model", aiModel);
+        if (temperature) formData.append("temperature", temperature);
+        if (threshold) formData.append("threshold", threshold);
+
+        request.upload.addEventListener("progress", (event) => {
+          if (!event.lengthComputable) return;
+          uploadState.set(row.dataset.key, { loaded: event.loaded, total: event.total });
+          updateOverallProgress();
+          const meta = row.querySelector(".status-meta");
+          if (meta) {
+            const pct = Math.round((event.loaded / event.total) * 100);
+            meta.textContent = `${pct}% uploaded`;
+          }
+        });
+
+        request.onreadystatechange = () => {
+          if (request.readyState !== 4) return;
+          const stateEl = row.querySelector(".status-state");
+          if (request.status >= 200 && request.status < 300) {
+            const resp = JSON.parse(request.responseText || "{}");
+            if (stateEl) stateEl.textContent = "Queued";
+            if (resp.task_id) {
+              row.dataset.taskId = resp.task_id;
+              pollStatus(resp.task_id, row);
+            }
+          } else {
+            if (stateEl) stateEl.textContent = "Upload failed";
+          }
+          resolve();
+        };
+
+        request.open("POST", `${backendUrl}/analysis/async`);
+        request.send(formData);
+      });
+
+    if (batchRun) {
+      batchRun.addEventListener("click", async () => {
+        const files = collectFiles().filter((file) => file.name.toLowerCase().endsWith(".pdf"));
+        if (!files.length) {
+          alert("Select at least one PDF file to upload.");
+          return;
+        }
+
+        batchRun.classList.add("is-loading");
+        batchRun.disabled = true;
+        const label = batchRun.querySelector(".btn-label");
+        const loadingText = batchRun.getAttribute("data-loading-text");
+        if (label && loadingText) label.textContent = loadingText;
+
+        files.forEach((file) => {
+          const pathName = file.webkitRelativePath || file.name;
+          const key = `${pathName}-${file.size}-${file.lastModified}`;
+          uploadState.set(key, { loaded: 0, total: file.size });
+        });
+        updateOverallProgress();
+
+        const uploads = files.map((file) => {
+          const row = createStatusRow(file);
+          return uploadFile(file, row);
+        });
+        await Promise.all(uploads);
+
+        batchRun.classList.remove("is-loading");
+        batchRun.disabled = false;
+        if (label) label.textContent = "Run Batch";
+      });
+    }
+
+    if (batchClear) {
+      batchClear.addEventListener("click", () => resetBatchUI());
+    }
+  </script>
+</body>
+</html>
