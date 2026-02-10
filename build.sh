@@ -87,4 +87,8 @@ cleanup() {
 trap cleanup EXIT
 
 echo "Starting UI server on ${UI_IP}:${UI_PORT}..."
+if [ ! -f "db.sqlite3" ]; then
+  echo "Database not found. Running migrations..."
+  python manage.py migrate
+fi
 python manage.py runserver "${UI_IP}:${UI_PORT}"
