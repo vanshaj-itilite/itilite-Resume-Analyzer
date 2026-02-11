@@ -122,3 +122,19 @@ frontend/
 ```bash
 pytest backend/unit_test.py
 ```
+
+## Pages
+* Landing Page
+![Landing page](assets/landing.png)
+
+* Single Analysis
+![Single Analysis page](assets/single_upload.png)
+
+* Batch Uploads
+![Batch Uploads](assets/batch_upload.png)
+
+* Analytics
+![Analytics page](assets/analytics.png)
+
+* Technical Docs
+![Technical Docs](assets/technical_docs.png)
