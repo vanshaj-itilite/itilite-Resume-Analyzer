@@ -103,6 +103,24 @@ a:hover {
   margin-bottom: 16px;
 }
 
+/* --- Table Controls --- */
+.table-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.table-controls .field {
+  margin-bottom: 0;
+  min-width: 220px;
+}
+
+.field.compact span {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
 /* --- Mode Toggle (Dark Theme Refined) --- */
 .mode-toggle {
   display: flex;

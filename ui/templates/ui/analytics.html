@@ -22,6 +22,16 @@
     </header>
 
     <section class="card">
+      <div class="table-controls">
+        <div class="field compact">
+          <span>Sort by score</span>
+          <select id="scoreSort" aria-label="Sort analytics by score">
+            <option value="desc">Score: High to Low</option>
+            <option value="asc">Score: Low to High</option>
+            <option value="default">Latest first</option>
+          </select>
+        </div>
+      </div>
       <div class="table">
         <div class="row header">
           <div>Timestamp</div>
@@ -32,7 +42,7 @@
         </div>
 
         {% for r in runs %}
-          <div class="row">
+          <div class="row" data-score="{{ r.score|default:'' }}" data-index="{{ forloop.counter0 }}">
             <div class="text-accent" style="font-family: monospace;">{{ r.created_at|date:"Y-m-d H:i" }}</div>
             <div class="text-muted">
               <span class="text-accent">{{ r.score|default:"-" }}</span>
@@ -96,6 +106,35 @@
         }
       });
     });
+
+    const scoreSort = document.getElementById("scoreSort");
+    const table = document.querySelector(".table");
+
+    function sortRows(mode) {
+      if (!table) return;
+      const rows = Array.from(table.querySelectorAll(".row")).filter((row) => !row.classList.contains("header") && !row.classList.contains("empty"));
+      if (rows.length === 0) return;
+
+      const sorted = rows.slice().sort((a, b) => {
+        if (mode === "default") {
+          return Number(a.dataset.index || 0) - Number(b.dataset.index || 0);
+        }
+        const aScore = parseFloat(a.dataset.score);
+        const bScore = parseFloat(b.dataset.score);
+        const aVal = Number.isFinite(aScore) ? aScore : -1;
+        const bVal = Number.isFinite(bScore) ? bScore : -1;
+        return mode === "asc" ? aVal - bVal : bVal - aVal;
+      });
+
+      sorted.forEach((row) => table.appendChild(row));
+    }
+
+    if (scoreSort) {
+      sortRows(scoreSort.value || "desc");
+      scoreSort.addEventListener("change", (event) => {
+        sortRows(event.target.value);
+      });
+    }
   </script>
 </body>
 </html>
