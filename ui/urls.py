@@ -10,6 +10,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("analytics/", views.analytics, name="analytics"),
     path("technical-docs/", views.technical_docs, name="technical_docs"),
+    path("how_to_use/", views.how_to_use, name="how_to_use"),
 ]
 
 if settings.DEBUG:

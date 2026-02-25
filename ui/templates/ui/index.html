@@ -19,6 +19,9 @@
         <a class="btn ghost" href="/analytics/" data-loading-text="Loading...">
           <span class="btn-label">View Analytics</span>
         </a>
+        <button type="button" class="btn ghost" id="openSettings">
+          Global AI Settings
+        </button>
       </div>
     </header>
 
@@ -78,43 +81,49 @@
         </aside>
 
         <main class="main-col">
-        <section class="card settings-card">
-          <div class="card-header">
-            <h2>Global AI Settings</h2>
-            <p class="sub">Configurations apply to all runs</p>
-          </div>
-          <div class="stack">
-            <label class="field">
-              <span>Model Provider</span>
-              {{ form.provider }}
-            </label>
-
-            <label class="field">
-              <span>Intelligence Model</span>
-              {{ form.ai_model }}
-            </label>
-            
-            <label class="field">
-              <span>Temperature (Creativity)</span>
-              {{ form.temperature }}
-            </label>
-            
-            <label class="field">
-              <span>Confidence Threshold</span>
-              <div class="range-container">
-                {{ form.threshold }}
-                <output id="thresholdValue">50</output>
+        <div id="settingsModal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+          <div class="modal-backdrop" data-close-settings></div>
+          <div class="modal-panel card settings-card">
+            <div class="modal-header-row">
+              <div class="card-header">
+                <h2 id="settingsTitle">Global AI Settings</h2>
+                <p class="sub">Configurations apply to all runs</p>
               </div>
-            </label>
+              <button type="button" class="btn ghost modal-close" data-close-settings>&times;</button>
+            </div>
+            <div class="stack">
+              <label class="field">
+                <span>Model Provider</span>
+                {{ form.provider }}
+              </label>
+
+              <label class="field">
+                <span>Intelligence Model</span>
+                {{ form.ai_model }}
+              </label>
+              
+              <label class="field">
+                <span>Temperature (Creativity)</span>
+                {{ form.temperature }}
+              </label>
+              
+              <label class="field">
+                <span>Confidence Threshold</span>
+                <div class="range-container">
+                  {{ form.threshold }}
+                  <output id="thresholdValue">50</output>
+                </div>
+              </label>
+            </div>
+            <div class="actions">
+              <button class="btn" type="button" id="saveAiSettings" data-loading-text="Saving...">
+                <span class="btn-label">Save AI Settings</span>
+                <span class="btn-spinner" aria-hidden="true"></span>
+              </button>
+              <span class="hint" id="aiSettingsStatus">Not saved</span>
+            </div>
           </div>
-          <div class="actions">
-            <button class="btn" type="button" id="saveAiSettings" data-loading-text="Saving...">
-              <span class="btn-label">Save AI Settings</span>
-              <span class="btn-spinner" aria-hidden="true"></span>
-            </button>
-            <span class="hint" id="aiSettingsStatus">Not saved</span>
-          </div>
-        </section>
+        </div>
 
         <div class="mode-toggle">
           <button type="button" class="mode-btn active" data-mode="single">Single Analysis</button>
@@ -233,32 +242,7 @@
     </section>
   </div>
 
-  <footer class="waterfall-footer">
-    <div class="waterfall-waves">
-      <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
-        <defs>
-          <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
-        </defs>
-        <g class="parallax">
-          <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(37, 99, 235, 0.7" />
-          <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(37, 99, 235, 0.5)" />
-          <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(37, 99, 235, 0.3)" />
-          <use xlink:href="#gentle-wave" x="48" y="7" fill="#2563eb" />
-        </g>
-      </svg>
-    </div>
-    
-    <div class="footer-content">
-      <div class="footer-info">
-        <p>&copy; 2026 AI Resume Analyzer • Intelligent Talent Profiling</p>
-        <div class="footer-links">
-          <a href="#">Privacy Policy</a>
-          <a href="/technical-docs/">Technical Docs</a>
-          <a href="#">Support</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+  {% include "ui/footer.html" %}
 
   {{ ai_model_providers|json_script:"providerModelsData" }}
 
@@ -343,6 +327,8 @@
     const modelSelect = document.querySelector('select[name="ai_model"]');
     const tempInputEl = document.querySelector('input[name="temperature"]');
     const thresholdInputEl = document.querySelector('input[name="threshold"]');
+    const settingsModal = document.getElementById("settingsModal");
+    const openSettingsButton = document.getElementById("openSettings");
 
     const setRunEnabled = (enabled) => {
       if (batchRun) batchRun.disabled = !enabled;
@@ -669,6 +655,29 @@
         }, 400);
       });
     }
+
+    const closeSettings = () => {
+      if (!settingsModal) return;
+      settingsModal.classList.add("hidden");
+      settingsModal.setAttribute("aria-hidden", "true");
+    };
+
+    if (openSettingsButton && settingsModal) {
+      openSettingsButton.addEventListener("click", () => {
+        settingsModal.classList.remove("hidden");
+        settingsModal.setAttribute("aria-hidden", "false");
+      });
+    }
+
+    document.querySelectorAll("[data-close-settings]").forEach((el) => {
+      el.addEventListener("click", () => closeSettings());
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeSettings();
+      }
+    });
 
     if (form) {
       form.addEventListener('submit', (e) => {

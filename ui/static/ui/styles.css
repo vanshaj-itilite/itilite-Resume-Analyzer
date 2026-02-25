@@ -1,14 +1,14 @@
 /* --- Variables & Core --- */
 :root {
-  --bg: #0b0f14;
-  --card: #121926;
-  --muted: #9fb1c7;
-  --text: #e7eef7;
-  --accent: #7bdff6;
-  --accent-2: #f6c57b;
-  --error: #ff6b6b;
-  --border: #1f2a3a;
-  --footer-bg: #0a111a; /* Darker base for footer */
+  --bg: #f7f4ef;        /* soft off‑white */
+  --card: #ffffff;      /* white cards */
+  --muted: #6b7280;     /* neutral gray text */
+  --text: #c6c0c0;      /* primary dark text */
+  --accent: #f97316;    /* orange accent */
+  --accent-2: #fbbf24;  /* warm secondary accent */
+  --error: #ef4444;
+  --border: #e5e7eb;    /* light gray borders */
+  --footer-bg: #111827; /* dark footer base */
 }
 
 * {
@@ -18,7 +18,7 @@
 body {
   margin: 0;
   font-family: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif;
-  background: radial-gradient(1200px 800px at 20% -10%, #192235, #0b0f14 60%);
+  background: radial-gradient(1200px 800px at 20% -10%, #fed7aa, var(--bg) 65%);
   color: var(--text);
   line-height: 1.5;
   min-height: 100vh;
@@ -41,6 +41,12 @@ body {
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 32px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .eyebrow {
@@ -597,6 +603,45 @@ select:focus {
   flex-direction: column;
   gap: 8px;
   margin: 20px 0;
+}
+
+/* --- Modal --- */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+}
+
+.modal.hidden {
+  display: none !important;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.modal-panel {
+  position: relative;
+  max-width: 520px;
+  width: 100%;
+  z-index: 50;
+}
+
+.modal-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-close {
+  padding-inline: 0.9rem;
 }
 
 .settings-card .field:last-child {

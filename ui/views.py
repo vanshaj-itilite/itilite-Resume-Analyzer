@@ -148,3 +148,6 @@ def analytics(request):
 
 def technical_docs(request):
     return render(request, "ui/technical_docs.html")
+
+def how_to_use(request):
+    return render(request, "ui/how_to_use.html")
