@@ -1,172 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>How to Use ITILITE Resume Analyzer</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'ui/styles.css' %}" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How To Use | Resume Analyzer</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'ui/styles.css' %}" />
 </head>
 <body>
-<div class="shell">
-    <header class="header">
-        <p class="pill">Guide</p>
-        <h1>How to Use the ITILITE Resume Analyzer</h1>
-        <p class="lead">
-            This page walks you through the full workflow: from uploading resumes (single or batch),
-            to AI processing behind the scenes, to exploring the analytics dashboard.
-        </p>
-    </header>
-
-    <nav class="card" aria-label="On this page">
-        <h2 class="sub">Contents</h2>
-        <ul>
-            <li><a href="#upload">1. Upload resumes (single &amp; batch)</a></li>
-            <li><a href="#processing">2. Processing pipeline</a></li>
-            <li><a href="#agents">3. AI agents behind the scenes</a></li>
-            <li><a href="#analytics">4. Reading the analytics page</a></li>
-        </ul>
+  <div class="shell">
+    <nav class="site-nav">
+      <div class="nav-inner">
+        <div class="brand">itilite <span>Resume Analyzer</span></div>
+        <div class="nav-links">
+          <a class="nav-link" href="/">Workspace</a>
+          <a class="nav-link" href="/how_to_use/">How To Use</a>
+          <a class="nav-link" href="/technical_docs/">Docs</a>
+          <a class="nav-link" href="/analytics/">Analytics</a>
+        </div>
+      </div>
     </nav>
 
-    <section class="section" id="upload">
-        <div class="section-header">
-            <p class="pill">Step 1</p>
-            <h2>Upload Resumes (Single or Batch)</h2>
-        </div>
-        <p>
-            Start on the <span class="highlight">Home / Upload</span> page. Here you can upload either a single resume
-            or a batch of resumes for bulk analysis.
-        </p>
+    <header class="hero-card page-hero">
+      <p class="eyebrow">Guide</p>
+      <h1>How to Use the Resume Analyzer</h1>
+      <p class="sub">End-to-end flow from upload to shortlist decisions.</p>
+    </header>
 
-        <h3>Single upload</h3>
-        <ol>
-            <li>Click on the file picker and select a PDF or DOCX resume from your system.</li>
-            <li>Optionally give this run a descriptive name (e.g. “Senior Backend – Jan batch”).</li>
-            <li>Choose the AI model / analysis configuration if the option is shown.</li>
-            <li>Click <span class="highlight">Analyze</span> to start processing.</li>
-        </ol>
+    <section class="card prose-card">
+      <h2>1. Upload resumes</h2>
+      <p>Use single mode for one candidate or batch mode for bulk processing. PDF files are preferred for stable extraction.</p>
+      <h3>Single upload</h3>
+      <ol>
+        <li>Switch to <strong>Single Analysis</strong>.</li>
+        <li>Paste or upload one resume and fill role context.</li>
+        <li>Save AI settings, then run analysis.</li>
+      </ol>
+      <h3>Batch upload</h3>
+      <ol>
+        <li>Switch to <strong>Batch Upload</strong>.</li>
+        <li>Select multiple PDFs or a folder.</li>
+        <li>Run batch and track live status per file.</li>
+      </ol>
 
-        <h3>Batch upload</h3>
-        <ol>
-            <li>Compress all your resumes into a single <span class="highlight">.zip</span> file.</li>
-            <li>Upload the zip via the same file picker.</li>
-            <li>Confirm the total number of resumes detected in the batch summary.</li>
-            <li>Click <span class="highlight">Analyze</span> to launch a bulk analysis run.</li>
-        </ol>
+      <h2>2. Configure AI settings</h2>
+      <p>Use Global AI Settings to choose provider, model, temperature, and threshold. Save settings before running analysis.</p>
 
-        <p class="note">
-            Supported formats and limits (file types, size, and count per run) are enforced at upload time.
-            If something is not accepted, you’ll see a clear validation message on the page.
-        </p>
+      <h2>3. Review output</h2>
+      <p>Each candidate includes score + summary. In batch mode, pass/fail icons are shown against threshold and status rows track progress and final state.</p>
+
+      <h2>4. Analyze trends</h2>
+      <p>Open the Analytics page to sort historical runs by score, compare summaries, and inspect model/provider combinations used per run.</p>
     </section>
-
-    <section class="section" id="processing">
-        <div class="section-header">
-            <p class="pill">Step 2</p>
-            <h2>Processing Pipeline</h2>
-        </div>
-
-        <p>
-            Once you submit an upload, the system pushes your files into an asynchronous
-            processing pipeline. You can safely navigate away while the analysis runs.
-        </p>
-
-        <ol>
-            <li><span class="highlight">File intake</span> – documents are validated, stored, and assigned an internal run ID.</li>
-            <li><span class="highlight">Text extraction</span> – PDFs and DOCX files are converted into clean, structured text.</li>
-            <li><span class="highlight">Field parsing</span> – basic fields like name, contact details, education, and experience blocks are extracted.</li>
-            <li><span class="highlight">AI scoring</span> – specialized agents (see below) evaluate each candidate on different dimensions.</li>
-            <li><span class="highlight">Aggregation</span> – scores and metadata are pushed into the analytics store used by the dashboard.</li>
-        </ol>
-
-        <p class="tip">
-            You can reopen the same analysis run later from the history or analytics view; there is no need
-            to re-upload files unless the underlying resumes have changed.
-        </p>
-    </section>
-
-    <section class="section" id="agents">
-        <div class="section-header">
-            <p class="pill">Under the hood</p>
-            <h2>AI Agents Behind the Scenes</h2>
-        </div>
-
-        <p>
-            The analyzer uses multiple focused AI agents instead of a single monolithic model.
-            Each agent is optimized for a specific part of the evaluation, which makes the results
-            more interpretable and controllable.
-        </p>
-
-        <div class="agent-list">
-            <div class="agent-card">
-                <div class="agent-title">Technical Agent</div>
-                <p class="agent-desc">
-                    Evaluates the candidate’s technical skills based on role, stack, and seniority.
-                    It looks at languages, frameworks, systems design exposure, and depth vs. breadth.
-                </p>
-            </div>
-            <div class="agent-card">
-                <div class="agent-title">Psychometric / Behavioral Agent</div>
-                <p class="agent-desc">
-                    Infers behavioral indicators like ownership, collaboration, leadership, and growth mindset
-                    from how the candidate describes their work and impact.
-                </p>
-            </div>
-            <div class="agent-card">
-                <div class="agent-title">Semantic Matching Agent</div>
-                <p class="agent-desc">
-                    Compares the resume against the job description or role definition using embeddings,
-                    surfacing how well the candidate aligns with the requirements and responsibilities.
-                </p>
-            </div>
-            <div class="agent-card">
-                <div class="agent-title">Document & Quality Agent</div>
-                <p class="agent-desc">
-                    Checks formatting quality, clarity, signal‑to‑noise ratio, and basic hygiene (typos,
-                    structure, redundancy), which can influence how easy the resume is to review.
-                </p>
-            </div>
-        </div>
-
-        <p class="note">
-            Depending on your configuration, you may see only a subset of these agents. The analytics
-            page shows which dimensions are active for a given run.
-        </p>
-    </section>
-
-    <section class="section" id="analytics">
-        <div class="section-header">
-            <p class="pill">Step 3</p>
-            <h2>Reading the Analytics Page</h2>
-        </div>
-
-        <p>
-            After processing completes, open the <span class="highlight">Analytics</span> page for the corresponding run.
-            This is where you explore scores, comparisons, and detailed breakdowns for each candidate.
-        </p>
-
-        <h3>Key areas on the analytics page</h3>
-        <ul>
-            <li><span class="highlight">Run summary</span> – number of resumes processed, time taken, and basic distribution of scores.</li>
-            <li><span class="highlight">Candidate table</span> – sortable list of candidates with overall scores and key tags.</li>
-            <li><span class="highlight">Dimension breakdown</span> – technical, behavioral, and semantic‑fit scores side by side.</li>
-            <li><span class="highlight">Drill‑down view</span> – per‑candidate view with agent‑level explanations and comments.</li>
-        </ul>
-
-        <p>
-            Use the filters and sorting controls to shortlist the most promising candidates:
-        </p>
-        <ul>
-            <li>Sort by overall fit or a specific dimension (e.g., technical depth first).</li>
-            <li>Filter by minimum score thresholds to focus on top percentiles.</li>
-            <li>Open an individual candidate to understand <em>why</em> they scored the way they did.</li>
-        </ul>
-
-        <p class="tip">
-            A good workflow is: first shortlist candidates using the analytics view, then open their original
-            resumes only for the final validation pass. This keeps the review process fast but still human‑in‑the‑loop.
-        </p>
-    </section>
-    </div>
-{% include "ui/footer.html" %}
-</body> 
+  </div>
+  {% include "ui/footer.html" %}
+</body>
 </html>

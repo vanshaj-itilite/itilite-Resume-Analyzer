@@ -9,105 +9,68 @@
 </head>
 <body>
   <div class="shell">
-    <header class="header">
-      <div>
-        <div class="eyebrow">Intelligence Insights</div>
-        <h1>Processing History</h1>
-        <p class="sub">Reviewing the latest 100 neural analysis cycles.</p>
+    <nav class="site-nav">
+      <div class="nav-inner">
+        <div class="brand">itilite <span>Resume Analyzer</span></div>
+        <div class="nav-links">
+          <a class="nav-link" href="/">Workspace</a>
+          <a class="nav-link" href="/how_to_use/">How To Use</a>
+          <a class="nav-link" href="/technical_docs/">Docs</a>
+          <a class="nav-link" href="/analytics/">Analytics</a>
+        </div>
       </div>
-      <a class="btn ghost" href="/" data-loading-text="Returning...">
-        <span class="btn-label">Back to Analyzer</span>
-        <span class="btn-spinner" aria-hidden="true"></span>
-      </a>
+    </nav>
+
+    <header class="hero-card page-hero">
+      <p class="eyebrow">Analytics</p>
+      <h1>Processing History</h1>
+      <p class="sub">Review the latest runs and sort by score quickly.</p>
     </header>
 
     <section class="card">
       <div class="table-controls">
-        <div class="field compact">
+        <label class="field compact">
           <span>Sort by score</span>
           <select id="scoreSort" aria-label="Sort analytics by score">
             <option value="desc">Score: High to Low</option>
             <option value="asc">Score: Low to High</option>
             <option value="default">Latest first</option>
           </select>
-        </div>
+        </label>
       </div>
-      <div class="table">
+
+      <div class="table analytics-table">
         <div class="row header">
           <div>Timestamp</div>
           <div>Score/PDF</div>
           <div>Summary</div>
           <div>Threshold</div>
-          <div>Model Provider/Model Name/Temp</div>
+          <div>Provider/Model/Temp</div>
         </div>
 
         {% for r in runs %}
           <div class="row" data-score="{{ r.score|default:'' }}" data-index="{{ forloop.counter0 }}">
-            <div class="text-accent" style="font-family: monospace;">{{ r.created_at|date:"Y-m-d H:i" }}</div>
+            <div class="text-accent mono">{{ r.created_at|date:"Y-m-d H:i" }}</div>
             <div class="text-muted">
               <span class="text-accent">{{ r.score|default:"-" }}</span>
               {% if r.file_name %}
-                <span class="text-muted"> • {{ r.file_name }}</span>
+                <span class="text-muted"> - {{ r.file_name }}</span>
               {% endif %}
             </div>
             <div class="text-muted summary-cell">{{ r.summary|default:"-" }}</div>
-            <div style="color: var(--accent-2);">{{ r.threshold }}%</div>
-            <div class="text-muted">
-              {{ r.provider|default:"-" }} / {{ r.ai_model|default:"-" }} / {{ r.temperature|default:"-" }}
-            </div>
+            <div>{{ r.threshold }}%</div>
+            <div class="text-muted">{{ r.provider|default:"-" }} / {{ r.ai_model|default:"-" }} / {{ r.temperature|default:"-" }}</div>
           </div>
         {% empty %}
-          <div class="row empty">
-            <p>No analysis logs found in the database.</p>
-          </div>
+          <div class="row empty"><p>No analysis logs found.</p></div>
         {% endfor %}
       </div>
     </section>
   </div>
 
-  <footer class="waterfall-footer">
-    <div class="waterfall-waves">
-      <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
-        <defs>
-          <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
-        </defs>
-        <g class="parallax">
-          <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(37, 99, 235, 0.7" />
-          <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(37, 99, 235, 0.5)" />
-          <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(37, 99, 235, 0.3)" />
-          <use xlink:href="#gentle-wave" x="48" y="7" fill="#2563eb" />
-        </g>
-      </svg>
-    </div>
-    
-    <div class="footer-content">
-      <div class="footer-info">
-        <p>&copy; 2026 AI Resume Analyzer • Intelligent Talent Profiling</p>
-        <div class="footer-links">
-          <a href="#">Privacy Policy</a>
-          <a href="/technical-docs/">Technical Docs</a>
-          <a href="#">Support</a>
-          <a href="/how-to-use/" data-route="/how-to-use/">How to Use</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+  {% include "ui/footer.html" %}
 
   <script>
-    // Loading State Logic
-    const linkButtons = document.querySelectorAll('a.btn[data-loading-text]');
-    linkButtons.forEach((link) => {
-      link.addEventListener('click', () => {
-        link.classList.add('is-loading');
-        link.setAttribute('aria-busy', 'true');
-        const label = link.querySelector('.btn-label');
-        const loadingText = link.getAttribute('data-loading-text');
-        if (label && loadingText) {
-          label.textContent = loadingText;
-        }
-      });
-    });
-
     const scoreSort = document.getElementById("scoreSort");
     const table = document.querySelector(".table");
 
@@ -132,9 +95,7 @@
 
     if (scoreSort) {
       sortRows(scoreSort.value || "desc");
-      scoreSort.addEventListener("change", (event) => {
-        sortRows(event.target.value);
-      });
+      scoreSort.addEventListener("change", (event) => sortRows(event.target.value));
     }
   </script>
 </body>
